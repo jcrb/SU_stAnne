@@ -1,0 +1,126 @@
+SAU Ste Anne
+========================================================
+
+La clinique Ste Anne fournit des données simplifiée de son activité sous forme d'un fichier exel appelé *Copie de 2013 RPU Ste Anne.xlsx*. Il s'agit d'un classeur où chaque page correspond à un mois de l'année 2013.
+
+Chaque page est enregistrée au format *.csv* sous me nom *2013_MM_stanne.csv*. Les lignes vides sont éliminées avant l'enregistrement au format *csv*.
+
+Meagling
+--------
+- les 2 premières lignes sont ignorées (cellules fusionnées)
+- les noms de colonne sont redéfinis
+- les dates sont mise au format iso
+
+lecture du fichier:
+-------------------
+```{r lecture}
+date()
+
+source("mes_fonctions.R")
+an<-"2013"
+hop<-"stanne.csv"
+data<-sau(an,hop,max=7)
+
+str(data)
+head(data)
+# edit(data)
+# fix(data)
+names(data)
+summary(data$total)
+```
+
+Données actives
+---------------
+On ne conserve que les jours renseignés, c'esta dire ceux pour lesquels le total despassages est supérieur à 0:
+```{r actifs}
+data<-data[data$total>0,]
+```
+
+Graphiques:
+----------
+```{r graphe}
+plot(data$date,data$total,type="l",col="blue",xlab="SAU Ste Anne",ylab="Passages")
+```
+Activité:
+---------
+
+### total des passages:
+```{r}
+t<-sum(data$total)
+t
+summary(data$total)
+sd(data$total)
+boxplot(data$total)
+hist(data$total,main="SAU Sainte-Anne",xlab="Passages",ylab="Fréquence",col="green")
+```
+### Entre 1 et 75
+```{r}
+t<-sum(data$entre1_75ans)
+t
+summary(data$entre1_75ans)
+sd(data$entre1_75ans)
+boxplot(data$entre1_75ans)
+hist(data$entre1_75ans,main="SAU Sainte-Anne",xlab="Passages entre 1 et 75 ans",ylab="Fréquence",col="green")
+```
+Résumé
+=======
+```{r resume}
+a<-apply(as.matrix(data[4:10]),2,sum)
+a
+total<-a[4]
+round(a*100/total,2)
+```
+Utilisation de zoo
+==================
+ref: livre R_cookbook Chap.14 pp 355 (time series)
+
+Création d'un objet de type *zoo* capable de manipuler les séries temporelles
+
+*zoo* demande au minimum une variable data pour les données à analyser (vecteur ou matrice) et une seconde variable *date* qui indique quelle colonne sera utilisée pour les dates.
+```{r zoo}
+library("zoo")
+ts<-zoo(as.matrix(data[4:10]),data$date)
+head(ts)
+plot(ts)
+delta<-diff(ts)
+```
+Moyenne lissée sur 7 jours
+```{r moyenne lissee}
+ma <- rollmean(ts, 7)
+# ma
+plot(ma, main="Moyenne lissée sur 7 jours")
+```
+Utilisation de *xts*
+====================
+Un autre gestionnaire de séries temporelles
+```{r xts}
+library("xts", lib.loc="/home/jcb/R/x86_64-pc-linux-gnu-library/2.15")
+ts<-xts(as.matrix(data[4:10]),data$date)
+head(ts)
+plot(ts$total,main="Clinique Ste Anne",xlab="Passages quotidiens au SU",ylab="Nombre")
+```
+Moyenne par semaine:
+```{r mean_week, warning=FALSE}
+apply.weekly(ts, mean)
+apply.weekly(ts, sd)
+```
+on peut essayer:
+- apply.daily(ts, f)
+- apply.weekly(ts, f)
+- apply.monthly(ts, f)
+- apply.quarterly(ts, f)
+- apply.yearly(ts, f)
+
+Note: on peut convertir un objet *zoo* en onjet *xts*: apply.monthly(as.xts(ts), f)
+
+Mesure de l'auto-corrélation:
+```{r ac}
+acf(ts$total)
+```
+
+
+
+
+
+
+
