@@ -45,7 +45,7 @@ Activité:
 ---------
 
 ### total des passages:
-```{r}
+```{r activite}
 t<-sum(data$total)
 t
 summary(data$total)
@@ -54,7 +54,7 @@ boxplot(data$total)
 hist(data$total,main="SAU Sainte-Anne",xlab="Passages",ylab="Fréquence",col="green")
 ```
 ### Entre 1 et 75
-```{r}
+```{r adulte}
 t<-sum(data$entre1_75ans)
 t
 summary(data$entre1_75ans)

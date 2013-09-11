@@ -19,7 +19,7 @@ date()
 ```
 
 ```
-## [1] "Wed Sep 11 12:08:29 2013"
+## [1] "Wed Sep 11 12:23:42 2013"
 ```
 
 ```r
@@ -155,14 +155,14 @@ sd(data$total)
 boxplot(data$total)
 ```
 
-![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-11.png) 
+![plot of chunk activite](figure/activite1.png) 
 
 ```r
 hist(data$total, main = "SAU Sainte-Anne", xlab = "Passages", ylab = "Fréquence", 
     col = "green")
 ```
 
-![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-12.png) 
+![plot of chunk activite](figure/activite2.png) 
 
 ### Entre 1 et 75
 
@@ -196,14 +196,14 @@ sd(data$entre1_75ans)
 boxplot(data$entre1_75ans)
 ```
 
-![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-21.png) 
+![plot of chunk adulte](figure/adulte1.png) 
 
 ```r
 hist(data$entre1_75ans, main = "SAU Sainte-Anne", xlab = "Passages entre 1 et 75 ans", 
     ylab = "Fréquence", col = "green")
 ```
 
-![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-22.png) 
+![plot of chunk adulte](figure/adulte2.png) 
 
 Résumé
 =======
