@@ -197,7 +197,7 @@ hljs.initHighlightingOnLoad();
 <pre><code class="r">date()
 </code></pre>
 
-<pre><code>## [1] &quot;Sat Oct 12 19:03:03 2013&quot;
+<pre><code>## [1] &quot;Tue Oct 29 17:58:56 2013&quot;
 </code></pre>
 
 <pre><code class="r">
@@ -218,7 +218,8 @@ data &lt;- sau(an, hop, max = 9)
 ## [1] &quot;2013_09_stanne.csv&quot;
 </code></pre>
 
-<pre><code class="r">
+<pre><code class="r">save(data, file = &quot;StAnne2013.Rda&quot;)
+
 str(data)
 </code></pre>
 
@@ -274,7 +275,8 @@ names(data)
 
 <p>On ne conserve que les jours renseignés, c&#39;esta dire ceux pour lesquels le total despassages est supérieur à 0:</p>
 
-<pre><code class="r">data &lt;- data[data$total &gt; 0, ]
+<pre><code class="r">load(&quot;StAnne2013.Rda&quot;)
+data &lt;- data[data$total &gt; 0, ]
 </code></pre>
 
 <h2>Graphiques:</h2>

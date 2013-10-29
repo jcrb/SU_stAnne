@@ -19,7 +19,7 @@ date()
 ```
 
 ```
-## [1] "Sat Oct 12 19:03:03 2013"
+## [1] "Tue Oct 29 17:58:56 2013"
 ```
 
 ```r
@@ -43,6 +43,7 @@ data <- sau(an, hop, max = 9)
 ```
 
 ```r
+save(data, file = "StAnne2013.Rda")
 
 str(data)
 ```
@@ -108,6 +109,7 @@ Données actives
 On ne conserve que les jours renseignés, c'esta dire ceux pour lesquels le total despassages est supérieur à 0:
 
 ```r
+load("StAnne2013.Rda")
 data <- data[data$total > 0, ]
 ```
 

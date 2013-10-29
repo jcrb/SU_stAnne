@@ -20,6 +20,7 @@ source("mes_fonctions.R")
 an<-"2013"
 hop<-"stanne.csv"
 data<-sau(an,hop,max=9)
+save(data,file="StAnne2013.Rda")
 
 str(data)
 head(data)
@@ -33,6 +34,7 @@ Données actives
 ---------------
 On ne conserve que les jours renseignés, c'esta dire ceux pour lesquels le total despassages est supérieur à 0:
 ```{r actifs}
+load("StAnne2013.Rda")
 data<-data[data$total>0,]
 ```
 
