@@ -19,7 +19,7 @@ date()
 source("mes_fonctions.R")
 an<-"2013"
 hop<-"stanne.csv"
-data<-sau(an,hop,max=7)
+data<-sau(an,hop,max=9)
 
 str(data)
 head(data)
@@ -82,6 +82,8 @@ library("zoo")
 ts<-zoo(as.matrix(data[4:10]),data$date)
 head(ts)
 plot(ts)
+lines(rollmean(ts, 7),col="red",lwd=2)
+
 delta<-diff(ts)
 ```
 Moyenne lissée sur 7 jours
@@ -94,10 +96,11 @@ Utilisation de *xts*
 ====================
 Un autre gestionnaire de séries temporelles
 ```{r xts}
-library("xts", lib.loc="/home/jcb/R/x86_64-pc-linux-gnu-library/2.15")
+library("xts")
 ts<-xts(as.matrix(data[4:10]),data$date)
 head(ts)
 plot(ts$total,main="Clinique Ste Anne",xlab="Passages quotidiens au SU",ylab="Nombre")
+lines(rollmean(ts$total, 7),col="red",lwd=2)
 ```
 Moyenne par semaine:
 ```{r mean_week, warning=FALSE}
