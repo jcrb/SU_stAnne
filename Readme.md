@@ -13,21 +13,46 @@ Meagling
 
 lecture du fichier:
 -------------------
+LIGNE 22 AJUSTER LE NOMBRE DE FICHIERS A LIRE
+
+Mesures:
+- nb de lignes
+- nb total de passages
+- tri des passages par catégories
+  - d'age:moins de 1 an, 1 à 75 ans, plus de 75ans
+  - de devenir: UHCD, hospitalisation, transfert
+- taux d'hopitalisation: UHCD + hosp + transfert / total
+
 
 ```r
+library("zoo")
+```
+
+```
+## 
+## Attaching package: 'zoo'
+## 
+## Les objets suivants sont masqués from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+```
+
+```r
+library("xts")
+source("mes_fonctions.R")
 date()
 ```
 
 ```
-## [1] "Tue Oct 29 17:58:56 2013"
+## [1] "Fri Nov 15 12:04:14 2013"
 ```
 
-```r
 
-source("mes_fonctions.R")
+
+```r
 an <- "2013"
 hop <- "stanne.csv"
-data <- sau(an, hop, max = 9)
+data <- sau(an, hop, max = 10)
 ```
 
 ```
@@ -40,23 +65,28 @@ data <- sau(an, hop, max = 9)
 ## [1] "2013_07_stanne.csv"
 ## [1] "2013_08_stanne.csv"
 ## [1] "2013_09_stanne.csv"
+## [1] "2013_10_stanne.csv"
 ```
 
 ```r
+
+# correction erreur
+data[7, 7] <- data[7, 5] + data[7, 6]
+
 save(data, file = "StAnne2013.Rda")
 
 str(data)
 ```
 
 ```
-## 'data.frame':	273 obs. of  10 variables:
+## 'data.frame':	304 obs. of  10 variables:
 ##  $ date        : Date, format: "2013-01-01" "2013-01-02" ...
 ##  $ finess      : int  670780212 670780212 670780212 670780212 670780212 670780212 670780212 670780212 670780212 670780212 ...
 ##  $ service     : Factor w/ 1 level "SAU Ste Anne": 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ inf1an      : int  2 0 2 1 1 0 0 0 0 1 ...
 ##  $ entre1_75ans: int  27 30 26 25 28 28 38 33 28 35 ...
 ##  $ sup75ans    : int  1 6 5 6 4 3 9 5 7 2 ...
-##  $ total       : int  30 36 33 32 33 31 0 38 35 38 ...
+##  $ total       : int  30 36 33 32 33 31 47 38 35 38 ...
 ##  $ hospitalises: int  0 0 0 0 0 0 0 0 0 0 ...
 ##  $ UHCD        : int  5 7 9 8 7 4 9 9 10 4 ...
 ##  $ tranferts   : int  0 0 0 1 1 0 2 0 1 0 ...
@@ -100,8 +130,104 @@ summary(data$total)
 
 ```
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##     0.0    34.0    40.0    39.7    45.0    69.0
+##    22.0    34.0    40.0    39.9    45.0    69.0
 ```
+
+```r
+min(data$date)
+```
+
+```
+## [1] "2013-01-01"
+```
+
+```r
+max(data$date)
+```
+
+```
+## [1] "2013-10-31"
+```
+
+```r
+nrow(data)
+```
+
+```
+## [1] 304
+```
+
+```r
+sum(data$total)
+```
+
+```
+## [1] 12139
+```
+
+```r
+s <- sapply(data[, 4:10], sum)
+p <- round(s/s[4] * 100, 2)
+rbind(s, p)
+```
+
+```
+##   inf1an entre1_75ans sup75ans total hospitalises    UHCD tranferts
+## s 211.00     10611.00  1317.00 12139         4.00 1925.00    174.00
+## p   1.74        87.41    10.85   100         0.03   15.86      1.43
+```
+
+```r
+hospit <- round(sum(s[5:7]/s[4]) * 100, 2)
+
+data$hosp <- (data[8] + data[9] + data[10])/data[7]
+# creation d'une colonne taux hospitalisation
+hosp <- (data[8] + data[9] + data[10])/data[7]
+names(hosp) <- "tx_hosp"
+data <- cbind(data, hosp)
+names(data)
+```
+
+```
+##  [1] "date"         "finess"       "service"      "inf1an"      
+##  [5] "entre1_75ans" "sup75ans"     "total"        "hospitalises"
+##  [9] "UHCD"         "tranferts"    "hosp"         "tx_hosp"
+```
+
+```r
+summary(data$hosp)
+```
+
+```
+##   hospitalises  
+##  Min.   :0.000  
+##  1st Qu.:0.125  
+##  Median :0.181  
+##  Mean   :0.175  
+##  3rd Qu.:0.218  
+##  Max.   :0.345
+```
+
+Taux hospitalisation
+--------------------
+
+```r
+ts <- zoo(data$tx_hosp, data$date)
+head(ts)
+```
+
+```
+## 2013-01-01 2013-01-02 2013-01-03 2013-01-04 2013-01-05 2013-01-06 
+##     0.1667     0.1944     0.2727     0.2812     0.2424     0.1290
+```
+
+```r
+plot(ts, ylab = "Taux hospitalisation", xlab = "2013", main = "SU Ste Anne - Taux d'hospitalisation", 
+    col = "lightblue")
+lines(rollmean(ts, 7), col = "blue", lwd = 2)
+```
+
+![plot of chunk tx_hosp](figure/tx_hosp.png) 
 
 
 Données actives
@@ -135,7 +261,7 @@ t
 ```
 
 ```
-## [1] 10837
+## [1] 12139
 ```
 
 ```r
@@ -144,7 +270,7 @@ summary(data$total)
 
 ```
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##    22.0    34.0    40.0    39.8    45.0    69.0
+##    22.0    34.0    40.0    39.9    45.0    69.0
 ```
 
 ```r
@@ -152,11 +278,12 @@ sd(data$total)
 ```
 
 ```
-## [1] 7.918
+## [1] 7.961
 ```
 
 ```r
-boxplot(data$total)
+boxplot(data$total, ylab = "nombre", main = "SU Ste Anne 2013 - Tous les passages", 
+    col = "yellow")
 ```
 
 ![plot of chunk activite](figure/activite1.png) 
@@ -176,7 +303,7 @@ t
 ```
 
 ```
-## [1] 9462
+## [1] 10611
 ```
 
 ```r
@@ -185,7 +312,7 @@ summary(data$entre1_75ans)
 
 ```
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##    18.0    30.0    34.0    34.8    40.0    63.0
+##    18.0    30.0    34.0    34.9    40.0    63.0
 ```
 
 ```r
@@ -193,11 +320,12 @@ sd(data$entre1_75ans)
 ```
 
 ```
-## [1] 7.387
+## [1] 7.41
 ```
 
 ```r
-boxplot(data$entre1_75ans)
+boxplot(data$entre1_75ans, ylab = "nombre", main = "SU Ste Anne 2013 - 1 à de 75ans", 
+    col = "yellow")
 ```
 
 ![plot of chunk adulte](figure/adulte1.png) 
@@ -209,6 +337,49 @@ hist(data$entre1_75ans, main = "SAU Sainte-Anne", xlab = "Passages entre 1 et 75
 
 ![plot of chunk adulte](figure/adulte2.png) 
 
+### Plus de 75ans
+
+```r
+t <- sum(data$sup75ans)
+t
+```
+
+```
+## [1] 1317
+```
+
+```r
+summary(data$sup75ans)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##    0.00    3.00    4.00    4.33    6.00   12.00
+```
+
+```r
+sd(data$sup75ans)
+```
+
+```
+## [1] 2.283
+```
+
+```r
+boxplot(data$sup75ans, ylab = "nombre", main = "SU Ste Anne 2013 - Plus de 75ans", 
+    col = "yellow")
+```
+
+![plot of chunk plus75](figure/plus751.png) 
+
+```r
+hist(data$sup75ans, main = "SAU Sainte-Anne", xlab = "Passages des plus de 75 ans", 
+    ylab = "Fréquence", col = "lightblue")
+```
+
+![plot of chunk plus75](figure/plus752.png) 
+
+
 Résumé
 =======
 
@@ -219,9 +390,9 @@ a
 
 ```
 ##       inf1an entre1_75ans     sup75ans        total hospitalises 
-##          181         9462         1194        10837            4 
+##          211        10611         1317        12139            4 
 ##         UHCD    tranferts 
-##         1743          142
+##         1925          174
 ```
 
 ```r
@@ -231,10 +402,12 @@ round(a * 100/total, 2)
 
 ```
 ##       inf1an entre1_75ans     sup75ans        total hospitalises 
-##         1.67        87.31        11.02       100.00         0.04 
+##         1.74        87.41        10.85       100.00         0.03 
 ##         UHCD    tranferts 
-##        16.08         1.31
+##        15.86         1.43
 ```
+
+
 
 Utilisation de zoo
 ==================
@@ -246,18 +419,6 @@ Création d'un objet de type *zoo* capable de manipuler les séries temporelles
 
 ```r
 library("zoo")
-```
-
-```
-## 
-## Attaching package: 'zoo'
-## 
-## Les objets suivants sont masqués from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-```
-
-```r
 ts <- zoo(as.matrix(data[4:10]), data$date)
 head(ts)
 ```
@@ -330,6 +491,7 @@ lines(rollmean(ts$total, 7), col = "red", lwd = 2)
 ![plot of chunk xts](figure/xts.png) 
 
 Moyenne par semaine:
+-------------------
 
 ```r
 apply.weekly(ts, mean)
@@ -338,7 +500,7 @@ apply.weekly(ts, mean)
 ```
 ##            inf1an entre1_75ans sup75ans total hospitalises  UHCD tranferts
 ## 2013-01-06 1.0000        27.33    4.167 32.50       0.0000 6.667    0.3333
-## 2013-01-13 0.8333        35.17    4.333 40.33       0.0000 6.000    0.3333
+## 2013-01-13 0.7143        35.57    5.000 41.29       0.0000 6.429    0.5714
 ## 2013-01-20 1.1429        34.00    4.429 39.57       0.0000 7.143    0.1429
 ## 2013-01-27 0.8571        38.29    5.429 44.57       0.0000 8.000    0.2857
 ## 2013-02-03 1.1429        34.86    5.143 41.14       0.0000 8.000    0.1429
@@ -376,7 +538,11 @@ apply.weekly(ts, mean)
 ## 2013-09-15 0.4286        34.57    3.571 38.57       0.0000 4.571    1.2857
 ## 2013-09-22 0.1429        37.43    4.714 42.29       0.0000 5.286    1.0000
 ## 2013-09-29 0.2857        40.43    3.429 44.14       0.5714 5.571    0.8571
-## 2013-09-30 2.0000        42.00    3.000 47.00       0.0000 7.000    1.0000
+## 2013-10-06 1.2857        40.43    3.571 45.29       0.0000 7.857    1.0000
+## 2013-10-13 1.4286        36.71    3.857 42.00       0.0000 5.286    0.7143
+## 2013-10-20 1.0000        39.14    3.571 43.71       0.0000 5.286    1.2857
+## 2013-10-27 0.8571        32.86    3.429 37.14       0.0000 3.857    1.0000
+## 2013-10-31 0.0000        27.25    4.000 31.25       0.0000 6.000    0.7500
 ```
 
 ```r
@@ -386,7 +552,7 @@ apply.weekly(ts, sd)
 ```
 ##             [,1]
 ## 2013-01-06 12.91
-## 2013-01-13 16.59
+## 2013-01-13 16.81
 ## 2013-01-20 16.27
 ## 2013-01-27 18.69
 ## 2013-02-03 16.59
@@ -424,7 +590,11 @@ apply.weekly(ts, sd)
 ## 2013-09-15 16.38
 ## 2013-09-22 17.79
 ## 2013-09-29 19.36
-## 2013-09-30 20.61
+## 2013-10-06 19.07
+## 2013-10-13 17.39
+## 2013-10-20 18.35
+## 2013-10-27 15.83
+## 2013-10-31 12.82
 ```
 
 on peut essayer:
@@ -436,13 +606,14 @@ on peut essayer:
 
 Note: on peut convertir un objet *zoo* en onjet *xts*: apply.monthly(as.xts(ts), f)
 
-Mesure de l'auto-corrélation:
+### Mesure de l'auto-corrélation:
 
 ```r
 acf(ts$total)
 ```
 
 ![plot of chunk ac](figure/ac.png) 
+
 
 
 

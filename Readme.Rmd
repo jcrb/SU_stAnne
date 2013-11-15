@@ -13,13 +13,31 @@ Meagling
 
 lecture du fichier:
 -------------------
-```{r lecture}
-date()
+LIGNE 22 AJUSTER LE NOMBRE DE FICHIERS A LIRE
 
+Mesures:
+- nb de lignes
+- nb total de passages
+- tri des passages par catégories
+  - d'age:moins de 1 an, 1 à 75 ans, plus de 75ans
+  - de devenir: UHCD, hospitalisation, transfert
+- taux d'hopitalisation: UHCD + hosp + transfert / total
+
+```{r init}
+library("zoo")
+library("xts")
 source("mes_fonctions.R")
+date()
+```
+
+```{r lecture}
 an<-"2013"
 hop<-"stanne.csv"
-data<-sau(an,hop,max=9)
+data<-sau(an,hop,max=10)
+
+# correction erreur
+data[7,7]<-data[7,5]+data[7,6]
+
 save(data,file="StAnne2013.Rda")
 
 str(data)
@@ -28,6 +46,30 @@ head(data)
 # fix(data)
 names(data)
 summary(data$total)
+min(data$date)
+max(data$date)
+nrow(data)
+sum(data$total)
+s<-sapply(data[,4:10],sum)
+p<-round(s/s[4]*100,2)
+rbind(s,p)
+hospit<-round(sum(s[5:7]/s[4])*100,2)
+
+data$hosp<-(data[8]+data[9]+data[10])/data[7]
+# creation d'une colonne taux hospitalisation
+hosp<-(data[8]+data[9]+data[10])/data[7]
+names(hosp)<-"tx_hosp"
+data<-cbind(data,hosp)
+names(data)
+summary(data$hosp)
+```
+Taux hospitalisation
+--------------------
+```{r tx_hosp}
+ts<-zoo(data$tx_hosp,data$date)
+head(ts)
+plot(ts,ylab="Taux hospitalisation",xlab="2013",main="SU Ste Anne - Taux d'hospitalisation",col="lightblue")
+lines(rollmean(ts, 7),col="blue",lwd=2)
 ```
 
 Données actives
@@ -52,7 +94,7 @@ t<-sum(data$total)
 t
 summary(data$total)
 sd(data$total)
-boxplot(data$total)
+boxplot(data$total,ylab="nombre",main="SU Ste Anne 2013 - Tous les passages",col="yellow")
 hist(data$total,main="SAU Sainte-Anne",xlab="Passages",ylab="Fréquence",col="green")
 ```
 ### Entre 1 et 75
@@ -61,9 +103,19 @@ t<-sum(data$entre1_75ans)
 t
 summary(data$entre1_75ans)
 sd(data$entre1_75ans)
-boxplot(data$entre1_75ans)
+boxplot(data$entre1_75ans,ylab="nombre",main="SU Ste Anne 2013 - 1 à de 75ans",col="yellow")
 hist(data$entre1_75ans,main="SAU Sainte-Anne",xlab="Passages entre 1 et 75 ans",ylab="Fréquence",col="green")
 ```
+### Plus de 75ans
+```{r plus75}
+t<-sum(data$sup75ans)
+t
+summary(data$sup75ans)
+sd(data$sup75ans)
+boxplot(data$sup75ans,ylab="nombre",main="SU Ste Anne 2013 - Plus de 75ans",col="yellow")
+hist(data$sup75ans,main="SAU Sainte-Anne",xlab="Passages des plus de 75 ans",ylab="Fréquence",col="lightblue")
+```
+
 Résumé
 =======
 ```{r resume}
@@ -72,6 +124,8 @@ a
 total<-a[4]
 round(a*100/total,2)
 ```
+
+
 Utilisation de zoo
 ==================
 ref: livre R_cookbook Chap.14 pp 355 (time series)
@@ -103,8 +157,10 @@ ts<-xts(as.matrix(data[4:10]),data$date)
 head(ts)
 plot(ts$total,main="Clinique Ste Anne",xlab="Passages quotidiens au SU",ylab="Nombre")
 lines(rollmean(ts$total, 7),col="red",lwd=2)
+
 ```
 Moyenne par semaine:
+-------------------
 ```{r mean_week, warning=FALSE}
 apply.weekly(ts, mean)
 apply.weekly(ts, sd)
@@ -118,10 +174,11 @@ on peut essayer:
 
 Note: on peut convertir un objet *zoo* en onjet *xts*: apply.monthly(as.xts(ts), f)
 
-Mesure de l'auto-corrélation:
+### Mesure de l'auto-corrélation:
 ```{r ac}
 acf(ts$total)
 ```
+
 
 
 
