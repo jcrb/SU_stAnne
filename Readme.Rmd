@@ -13,7 +13,7 @@ Meagling
 
 lecture du fichier:
 -------------------
-LIGNE 22 AJUSTER LE NOMBRE DE FICHIERS A LIRE
+LIGNE 36 AJUSTER LE NOMBRE DE FICHIERS A LIRE (max = 12)
 
 Mesures:
 - nb de lignes
@@ -33,7 +33,7 @@ date()
 ```{r lecture}
 an<-"2013"
 hop<-"stanne.csv"
-data<-sau(an,hop,max=10)
+data<-sau(an,hop,max=12)
 
 # correction erreur
 data[7,7]<-data[7,5]+data[7,6]
@@ -46,14 +46,18 @@ head(data)
 # fix(data)
 names(data)
 summary(data$total)
-min(data$date)
-max(data$date)
-nrow(data)
-sum(data$total)
+
+min_date <- as.character(min(data$date))
+max_date <- as.character(max(data$date))
+n_jours <- nrow(data)
+n_passages <- sum(data$total)
+
 s<-sapply(data[,4:10],sum)
 p<-round(s/s[4]*100,2)
-rbind(s,p)
+rd <- rbind(s,p)
+rd
 hospit<-round(sum(s[5:7]/s[4])*100,2)
+hospit
 
 data$hosp<-(data[8]+data[9]+data[10])/data[7]
 # creation d'une colonne taux hospitalisation
@@ -62,7 +66,26 @@ names(hosp)<-"tx_hosp"
 data<-cbind(data,hosp)
 names(data)
 summary(data$hosp)
+
 ```
+
+***
+### Clinique Sainte Anne 2013 (GHSV)
+***
+Chiffres clés  |  valeur
+------|--------  
+date début  | `r min_date` 
+date fin    |  `r max_date`  
+nb de jours |  `r n_jours`  
+passages    |  `r n_passages`  
+< 1 an  |  `r s[1]` (`r p[1]` %)
+adultes < 75 ans  |  `r s[2]` (`r p[2]` %)
+plus de 75 ans  |  `r s[3]` (`r p[3]` %)
+taux hospitalisation  |  `r hospit` %
+
+***
+***
+
 Taux hospitalisation
 --------------------
 ```{r tx_hosp}
